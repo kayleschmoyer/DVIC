@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - inspection_network
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_SERVER=mssql
+      - DB_NAME=Vastoffice
+      - DB_USER=sa
+      - DB_PASSWORD=YourStrong@Passw0rd
+      - JWT_SECRET=your_jwt_secret
+    depends_on:
+      - mssql
+    networks:
+      - inspection_network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - inspection_network
+
+volumes:
+  mssql_data:
+
+networks:
+  inspection_network:
+    driver: bridge
